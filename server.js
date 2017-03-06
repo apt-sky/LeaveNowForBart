@@ -1,7 +1,4 @@
-const http = require('http');
-const server_hostname = '127.0.0.1';
-const server_port = 3000;
-
+var express = require('express');
 var request = require('request');
 var parseString = require('xml2js').parseString;
 var host = 'http://api.bart.gov/api/etd.aspx?cmd=etd&orig=EMBR&key=MW9S-E7SL-26DU-VV8V'
@@ -48,10 +45,12 @@ function printLeavingTimes(etdItem, destinationAbbrv) {
         }
 };
 
-const server = http.createServer((req, res) => {
-    getEtd();
-});
+var app = express();
 
-server.listen(server_port, server_hostname, () => {
-        console.log(`Server running at http://${server_hostname}:${server_port}/`);
-});
+app.get('/', function(req, res) {
+        res.send('Hello World!');
+})
+
+app.listen(3000, function() {
+        console.log("Example app listening on port 3000!");
+})
