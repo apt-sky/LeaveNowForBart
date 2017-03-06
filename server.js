@@ -4,7 +4,7 @@ var parseString = require('xml2js').parseString;
 
 var sourceCode = 'EMBR';
 var destinationCode = 'MLBR';
-var host = 'http://api.bart.gov/api/etd.aspx?cmd=etd&orig=EMBR&key=MW9S-E7SL-26DU-VV8V'
+var host = 'http://api.bart.gov/api/etd.aspx?cmd=etd&orig='+sourceCode+'&key=MW9S-E7SL-26DU-VV8V'
 
 function getEtd(res) {
         request(host, function (error, response, body){
@@ -36,7 +36,7 @@ function getDestinationEtdForSourceStation(station) {
 };
 
 function isEtdRequiredDestination(etdItem) {
-        return (etdItem.abbreviation[0] === 'MLBR');
+        return (etdItem.abbreviation[0] === destinationCode);
 };
 
 function getMinutesForEtd(etdItem) {
@@ -50,6 +50,7 @@ function getMinutesForEtd(etdItem) {
 }
 
 function printLeavingTimesToConsole(minutes, destination) {
+
         console.log("The Next Trains to " + destination + " are leaving in ...");
         minutes.forEach(function(minute) {
                 if(isNaN(minute)) {
@@ -65,9 +66,8 @@ var app = express();
 
 app.get('/', function(req, res) {
         getEtd(res);
-        //res.send('Hello World!');
 })
 
 app.listen(3000, function() {
-        console.log("Example app listening on port 3000!");
+        console.log("LeaveNowForBart app listening on port 3000!");
 })
