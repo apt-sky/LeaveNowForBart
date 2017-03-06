@@ -28,26 +28,40 @@ function getEtdsForStation(station) {
         var stationEtd = station.etd;
 
         stationEtd.forEach(function(etdItem){
-                printLeavingTimes(etdItem, 'MLBR');
+                if (etdItem.abbreviation[0] === 'MLBR') {
+                        var destination = etdItem.destination[0];
+                        var minutes = getMinutesForEtd(etdItem);
+                        printLeavingTimes(minutes, destination);
+                }
         });
  };
 
-function printLeavingTimes(etdItem, destinationAbbrv) {
-        if (etdItem.abbreviation[0] === destinationAbbrv) {
-                var estimates = etdItem.estimate;
-                var destination = etdItem.destination[0];
-                console.log("The Next Trains to " + destination + " are leaving in ...");
-                estimates.forEach(function(estimatesItem) {
-                        var minutes = estimatesItem.minutes[0];
-                        console.log(minutes + " minutes");
-                });
-                console.log();
-        }
-};
+function getMinutesForEtd(etdItem) {
+        var estimates = etdItem.estimate;
+        var minutes = [];
+        estimates.forEach(function(estimatesItem) {
+                minutes.push(estimatesItem.minutes[0]);
+        });
+
+        return minutes;
+}
+
+function printLeavingTimes(minutes, destination) {
+        console.log("The Next Trains to " + destination + " are leaving in ...");
+        minutes.forEach(function(minute) {
+                if(isNaN(minute)) {
+                        console.log(minute);
+                } else {
+                        console.log(minute + " minutes");
+                }
+        });
+        console.log();
+}
 
 var app = express();
 
 app.get('/', function(req, res) {
+        getEtd();
         res.send('Hello World!');
 })
 
