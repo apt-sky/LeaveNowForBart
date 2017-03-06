@@ -1,9 +1,12 @@
 var express = require('express');
 var request = require('request');
 var parseString = require('xml2js').parseString;
+
+var sourceCode = 'EMBR';
+var destinationCode = 'MLBR';
 var host = 'http://api.bart.gov/api/etd.aspx?cmd=etd&orig=EMBR&key=MW9S-E7SL-26DU-VV8V'
 
-function getEtd() {
+function getEtd(res) {
         request(host, function (error, response, body){
                 if (error) {
                         console.log('error:', error);
@@ -13,7 +16,11 @@ function getEtd() {
                                 if (err) {
                                         console.log('Error while parsing response');
                                 } else {        
-                                        getEtdsForStation(result.root.station[0]);
+                                        var sourceStation = result.root.station[0];
+                                        var destinationEtdItem = getDestinationEtdForSourceStation(sourceStation);
+                                        var minutes = getMinutesForEtd(destinationEtdItem);
+                                        printLeavingTimesToConsole(minutes, destinationEtdItem.destination[0]);
+                                        res.send(minutes);
                                 }
                         });
                 }
@@ -23,18 +30,14 @@ function getEtd() {
         });
 };
 
-function getEtdsForStation(station) {
-        var stationName = station.name;
-        var stationEtd = station.etd;
+function getDestinationEtdForSourceStation(station) {
+        var destinationEtdItem = station.etd.find(isEtdRequiredDestination);
+        return destinationEtdItem;
+};
 
-        stationEtd.forEach(function(etdItem){
-                if (etdItem.abbreviation[0] === 'MLBR') {
-                        var destination = etdItem.destination[0];
-                        var minutes = getMinutesForEtd(etdItem);
-                        printLeavingTimes(minutes, destination);
-                }
-        });
- };
+function isEtdRequiredDestination(etdItem) {
+        return (etdItem.abbreviation[0] === 'MLBR');
+};
 
 function getMinutesForEtd(etdItem) {
         var estimates = etdItem.estimate;
@@ -46,7 +49,7 @@ function getMinutesForEtd(etdItem) {
         return minutes;
 }
 
-function printLeavingTimes(minutes, destination) {
+function printLeavingTimesToConsole(minutes, destination) {
         console.log("The Next Trains to " + destination + " are leaving in ...");
         minutes.forEach(function(minute) {
                 if(isNaN(minute)) {
@@ -61,8 +64,8 @@ function printLeavingTimes(minutes, destination) {
 var app = express();
 
 app.get('/', function(req, res) {
-        getEtd();
-        res.send('Hello World!');
+        getEtd(res);
+        //res.send('Hello World!');
 })
 
 app.listen(3000, function() {
