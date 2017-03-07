@@ -1,6 +1,7 @@
 var express = require('express');
 var request = require('request');
 var parseString = require('xml2js').parseString;
+var CronJob = require('cron').CronJob;
 
 var sourceCode = 'EMBR';
 var destinationCode = 'MLBR';
@@ -20,7 +21,9 @@ function getEtd(res) {
                                         var destinationEtdItem = getDestinationEtdForSourceStation(sourceStation);
                                         var minutes = getMinutesForEtd(destinationEtdItem);
                                         printLeavingTimesToConsole(minutes, destinationEtdItem.destination[0]);
-                                        res.send(minutes);
+                                        if (res) {
+                                                res.send(minutes);
+                                        }
                                 }
                         });
                 }
@@ -71,3 +74,11 @@ app.get('/', function(req, res) {
 app.listen(3000, function() {
         console.log("LeaveNowForBart app listening on port 3000!");
 })
+
+var job = new CronJob('0 */7 * * * *', function(){
+        console.log('Run every 7 minutes')
+        console.log(new Date());
+        getEtd();
+}, null, true, 'America/Los_Angeles');
+
+job.start();
